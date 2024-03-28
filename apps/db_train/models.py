@@ -2,7 +2,39 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import *
+from django.db.models import Q, Max, Min, Avg, Count
 # Создайте свои модели здесь
+
+
+class AuthorProfile(models.Model):
+    author = models.OneToOneField('Author', on_delete=models.CASCADE)
+    stage = models.IntegerField(default=0,
+                                blank=True,
+                                verbose_name="Стаж",
+                                help_text="Стаж в годах")
+
+    def __str__(self):
+        return f"Автор: {self.author.username}; Стаж: {self.stage}"
+
+
+class Entry(models.Model):
+    text = models.TextField(verbose_name="Текст статьи",
+                            )
+    author = models.ForeignKey("Author", on_delete=models.CASCADE,
+                               related_name='entries')
+    tags = models.ManyToManyField("Tag", related_name='entries')
+
+    def __str__(self):
+        return f"{self.author} - {[value[0] for value in self.tags.all().values_list('name')]}"
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50,
+                            verbose_name="Название",
+                            )
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class Author(models.Model):
