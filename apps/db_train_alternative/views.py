@@ -7,6 +7,11 @@ import json
 
 
 class AuthorREST(View):
+
+    @csrf_exempt
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
     def get(self, request, id=None):
 
         if id is None:  # Проверяем, что требуется вернуть всех пользователей
@@ -40,7 +45,9 @@ class AuthorREST(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            author = Author.objects.create(name=data['name'], email=data['email'])
+            author = Author(name=data['name'], email=data['email'])
+            author.clean_fields()  # Запуск валидаций
+            author.save()  # Сохранение в БД
             response_data = {
                 'message': f'Автор успешно создан',
                 'id': author.id,
