@@ -9,8 +9,8 @@ class TrainView(View):
         # Создайте здесь запросы к БД
         max_self_esteem = Author.objects.aggregate(max_self_esteem=Max('self_esteem'))
         self.answer1 = Author.objects.filter(self_esteem=max_self_esteem['max_self_esteem'])  # TODO Какие авторы имеют самую высокую уровень самооценки(self_esteem)?
-        self.answer2 = None  # TODO Какой автор имеет наибольшее количество опубликованных статей?
-        # max_count_entries = Entry.objects.values('author').annotate(count=Count('id'))
+        self.answer2 = Author.objects.annotate(number=Count('entries')).order_by('-number').first()  # TODO Какой автор имеет наибольшее количество опубликованных статей?
+        # max_count_entries = Author.objects.annotate(number_of_entrys='entrys').order.by(-'number_of_entrys').first()
         self.answer3 = None  # TODO Какие статьи содержат тег 'Кино' или 'Музыка' ?
         # Entry.objects.select_related('author').filter(Q(tags__name='Кино') | Q(tags__name='Музыка'))
         self.answer4 = Author.objects.filter(gender='ж').count()  # TODO Сколько авторов женского пола зарегистрировано в системе?
