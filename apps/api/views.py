@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt  # Чтобы post, put, patch, delete не требовали csrf токена (небезопасно)
 from apps.db_train_alternative.models import Author
-from .serializers import AuthorSerializer
+from .serializers import AuthorSerializer, AuthorModelSerializer
 
 
 class AuthorAPIView(APIView):
@@ -16,7 +16,7 @@ class AuthorAPIView(APIView):
         if pk is not None:
             try:
                 author = Author.objects.get(pk=pk)
-                serializer = AuthorSerializer(author)
+                serializer = AuthorModelSerializer(author)
                 return Response(serializer.data)
             except Author.DoesNotExist:
                 return Response({"message": "Автор не найден"}, status=status.HTTP_404_NOT_FOUND)
