@@ -9,12 +9,39 @@ from django.http import Http404
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
+class AuthorPagination(PageNumberPagination):
+    page_size = 5  # количество объектов на странице
+    page_size_query_param = 'page_size'  # параметр запроса для настройки количества объектов на странице
+    max_page_size = 1000 # максимальное количество объектов на странице
 
 
 class AuthorViewSet(ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorModelSerializer
+    pagination_class = AuthorPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['name', 'email']
+    search_fields = ['email']  # Поля, по которым будет выполняться поиск
+    ordering_fields = ['name', 'email']  # Поля, по которым можно сортировать
+    # http_method_names = ['get', 'post']  # Указываем для каких полем можем проводить фильтрацию
 
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        name = self.request.query_params.get('name')
+        if name:
+            queryset = queryset.filter(name__contains=name)
+        return queryset
+
+    @action(detail=True, methods=['post'])
+    def my_action(self, request, pk=None):
+        # Доп логика
+        return Response({'message': f'Пользовательская функция для пользователя с pk={pk}'})
 
 class AuthorGenericAPIView(GenericAPIView, RetrieveModelMixin, ListModelMixin,
                            CreateModelMixin, UpdateModelMixin, DestroyModelMixin):
